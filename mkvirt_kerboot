@@ -1,0 +1,90 @@
+#!/bin/bash
+
+#     --machine virt,virtualization=true,kernel_irqchip=on,gic-version=3 \#
+#     --qemu-commandline="-d unimp,guest_errors -serial mon:stdio" \
+
+# --features acpi=off \
+# --features gic.version=2 \
+
+export VIRT_NAME="debian-stable"
+export QEMU_ARCH="aarch64"
+export QEMU_MACH="virt"
+export QEMU_CPU="cortex-a53"
+export QEMU_MEM="1024"
+export QEMU_KERNEL="/opt/vbox/media/shared/dev/debian-runner/debian-stable-qemu/data/boot/vmlinuz-6.1.0-18-arm64"
+export QEMU_INITRD="/opt/vbox/media/shared/dev/debian-runner/debian-stable-qemu/data/boot/initrd.img-6.1.0-18-arm64"
+export QEMU_APPEND="root=/dev/mapper/rootvg-root console=ttyAMA0 consoleblank=0 elevator=noop scsi_mod.use_blk_mq=Y net.ifnames=0 biosdevname=0 - DEBIAN_FRONTEND=text"
+export QEMU_SHARED="/opt/vbox/media/shared/dev/debian-runner/debian-stable-qemu/data,shared"
+export QEMU_SYSCOUNT=1
+export QEMU_DISKPATH="/opt/vbox/media/shared/dev/debian-runner/debian-stable-qemu"
+
+if [ -z "$VIRT_NAME" ]; then
+    echo "VIRT_NAME: libvirt domain name: missing"
+    exit 1
+fi
+if [ -z "$QEMU_ARCH" ]; then
+    echo "QEMU_ARCH: systemn target platform: missing"
+    exit 1
+fi
+if [ -z "$QEMU_MACH" ]; then
+    echo "QEMU_MACH: systemn target machine: missing"
+    exit 1
+fi
+if [ -z "$QEMU_CPU" ]; then
+    echo "QEMU_CPU: systemn target CPU: missing"
+    exit 1
+fi
+if [ -z "$QEMU_MEM" ]; then
+    echo "QEMU_MEM: systemn target memory: missing"
+    exit 1
+fi
+if [ -z "$QEMU_KERNEL" ]; then
+    echo "QEMU_KERNEL: systemn target kernel: missing"
+    exit 1
+fi
+if [ -z "$QEMU_INITRD" ]; then
+    echo "QEMU_INITRD: systemn target initrd: missing"
+    exit 1
+fi
+if [ -z "$QEMU_APPEND" ]; then
+    echo "QEMU_APPEND: systemn target kernel command line: missing"
+    exit 1
+fi
+if [ -n "$QEMU_SYSCOUNT" ]; then
+    if [ -z "$QEMU_DISKPATH" ]; then
+	echo "QEMU_DISKPATH: systemn target disk path: missing"
+	exit 1
+    fi
+fi
+
+read -r -d '' QEMU <<EOF
+LIBVIRT_DEBUG=1 virt-install \
+    --connect qemu:///system \
+    --virt-type qemu \
+    -n "$VIRT_NAME" \
+    --install no_install=yes \
+    --noreboot \
+    --arch "$QEMU_ARCH" \
+    --machine "$QEMU_MACH" \
+    --features acpi=off \
+    --cpu "$QEMU_CPU" \
+    --memory "$QEMU_MEM" \
+    --graphics none \
+    --boot kernel="$QEMU_KERNEL",initrd="$QEMU_INITRD",kernel_args="$QEMU_APPEND" \
+    --network default \
+    --rng /dev/urandom \
+    --clock offset=utc
+EOF
+
+if [ -n "$QEMU_SHARED" ]; then
+    QEMU="$QEMU --filesystem $QEMU_SHARED"
+fi
+if [ -n "$QEMU_SYSCOUNT" ]; then
+    SYSHD_DISKS="--disk $QEMU_DISKPATH/sys_boot.img,size=0.5 "
+    for i in $(seq 1 "${QEMU_SYSCOUNT}"); do
+	SYSHD_DISKS="${SYSHD_DISKS}--disk $QEMU_DISKPATH/sys_i.img,size=1.5 "
+    done
+    QEMU="$QEMU $SYSHD_DISKS"
+fi
+
+echo eval "$QEMU"
