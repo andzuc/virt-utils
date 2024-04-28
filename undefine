@@ -1,2 +1,11 @@
 #!/bin/bash
-virsh -c qemu:///system undefine debian-stable
+
+if [ $# -ne 1 ]; then
+    APP_NAME="$(basename $0)"
+    echo "${APP_NAME}: Undefines a libvirt domain"
+    echo "${APP_NAME}: Usage is: ${APP_NAME} {DOMAIN_NAME}"
+    echo -e "DOMAIN_NAME: libvirt domain name"
+    exit 1
+fi
+
+virsh -c qemu:///system undefine "$1"

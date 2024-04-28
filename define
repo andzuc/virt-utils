@@ -1,2 +1,11 @@
 #!/bin/bash
-virsh -c qemu:///system define debian-stable.xml
+
+if [ $# -ne 1 ]; then
+    APP_NAME="$(basename $0)"
+    echo "${APP_NAME}: define a new libvirt domain, given its XML definition"
+    echo "${APP_NAME}: Usage is: ${APP_NAME} {DOMAIN_XML}"
+    echo -e "DOMAIN_XML: path to a libvirt domain XML file"
+    exit 1
+fi
+
+virsh -c qemu:///system define "$1"
