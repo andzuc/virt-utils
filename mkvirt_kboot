@@ -82,9 +82,9 @@ fi
 if [ -n "$QEMU_SYSCOUNT" ]; then
     SYSHD_DISKS="--disk $QEMU_DISKPATH/sys_boot.img,size=0.5 "
     for i in $(seq 1 "${QEMU_SYSCOUNT}"); do
-	SYSHD_DISKS="${SYSHD_DISKS}--disk $QEMU_DISKPATH/sys_i.img,size=1.5 "
+	SYSHD_DISKS="${SYSHD_DISKS}--disk $QEMU_DISKPATH/sys_$i.img,size=1.5 "
     done
     QEMU="$QEMU $SYSHD_DISKS"
 fi
 
-echo eval "$QEMU"
+eval "$QEMU"
