@@ -6,18 +6,6 @@
 # --features acpi=off \
 # --features gic.version=2 \
 
-export VIRT_NAME="debian-stable"
-export QEMU_ARCH="aarch64"
-export QEMU_MACH="virt"
-export QEMU_CPU="cortex-a53"
-export QEMU_MEM="1024"
-export QEMU_KERNEL="/opt/vbox/media/shared/dev/debian-runner/debian-stable-qemu/data/boot/vmlinuz-6.1.0-18-arm64"
-export QEMU_INITRD="/opt/vbox/media/shared/dev/debian-runner/debian-stable-qemu/data/boot/initrd.img-6.1.0-18-arm64"
-export QEMU_APPEND="root=/dev/mapper/rootvg-root console=ttyAMA0 consoleblank=0 elevator=noop scsi_mod.use_blk_mq=Y net.ifnames=0 biosdevname=0 - DEBIAN_FRONTEND=text"
-export QEMU_SHARED="/opt/vbox/media/shared/dev/debian-runner/debian-stable-qemu/data,shared"
-export QEMU_SYSCOUNT=1
-export QEMU_DISKPATH="/opt/vbox/media/shared/dev/debian-runner/debian-stable-qemu"
-
 if [ -z "$VIRT_NAME" ]; then
     echo "VIRT_NAME: libvirt domain name: missing"
     exit 1
