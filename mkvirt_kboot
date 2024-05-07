@@ -52,6 +52,7 @@ LIBVIRT_DEBUG=1 virt-install \
     -n "$VIRT_NAME" \
     --install no_install=yes \
     --noreboot \
+    --osinfo detect=on,require=off \
     --arch "$QEMU_ARCH" \
     --machine "$QEMU_MACH" \
     --features acpi=off \
