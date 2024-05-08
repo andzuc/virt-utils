@@ -60,7 +60,7 @@ LIBVIRT_DEBUG=1 virt-install \
     --memory "$QEMU_MEM" \
     --graphics none \
     --boot kernel="$QEMU_KERNEL",initrd="$QEMU_INITRD",kernel_args="$QEMU_APPEND" \
-    --network default \
+    --network default,rom_bar=0 \
     --rng /dev/urandom \
     --clock offset=utc
 EOF
