@@ -26,18 +26,6 @@ if [ -z "$QEMU_MEM" ]; then
     echo "QEMU_MEM: systemn target memory: missing"
     exit 1
 fi
-if [ -z "$QEMU_KERNEL" ]; then
-    echo "QEMU_KERNEL: systemn target kernel: missing"
-    exit 1
-fi
-if [ -z "$QEMU_INITRD" ]; then
-    echo "QEMU_INITRD: systemn target initrd: missing"
-    exit 1
-fi
-if [ -z "$QEMU_APPEND" ]; then
-    echo "QEMU_APPEND: systemn target kernel command line: missing"
-    exit 1
-fi
 if [ -n "$QEMU_SYSCOUNT" ]; then
     if [ -z "$QEMU_DISKPATH" ]; then
 	echo "QEMU_DISKPATH: systemn target disk path: missing"
@@ -59,11 +47,16 @@ LIBVIRT_DEBUG=1 virt-install \
     --cpu "$QEMU_CPU" \
     --memory "$QEMU_MEM" \
     --graphics none \
-    --boot kernel="$QEMU_KERNEL",initrd="$QEMU_INITRD",kernel_args="$QEMU_APPEND" \
     --network default,rom_bar=0 \
     --rng /dev/urandom \
     --clock offset=utc
 EOF
+
+
+if [ -n "$QEMU_KERNEL" ] && [ -n "$QEMU_INITRD" ] && [ -n "$QEMU_APPEND" ]; then
+    QEMU="$QEMU --boot kernel=\"$QEMU_KERNEL\",initrd=\"$QEMU_INITRD\",kernel_args=\"$QEMU_APPEND\""
+fi
+
 
 if [ -n "$QEMU_SHARED" ]; then
     QEMU="$QEMU --filesystem $QEMU_SHARED"
@@ -74,6 +67,8 @@ if [ -n "$QEMU_SYSCOUNT" ]; then
 	SYSHD_DISKS="${SYSHD_DISKS}--disk $QEMU_DISKPATH/sys_$i.img,size=1.5 "
     done
     QEMU="$QEMU $SYSHD_DISKS"
+else
+    QEMU="$QEMU --disk none"
 fi
 
 eval "$QEMU"
