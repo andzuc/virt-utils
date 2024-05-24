@@ -62,10 +62,8 @@ if [ -n "$QEMU_SHARED" ]; then
     QEMU="$QEMU --filesystem $QEMU_SHARED"
 fi
 if [ -n "$QEMU_SYSCOUNT" ]; then
-    touch "$QEMU_DISKPATH/sys_boot.img"
     SYSHD_DISKS="--disk $QEMU_DISKPATH/sys_boot.img,size=0.5 "
     for i in $(seq 1 "${QEMU_SYSCOUNT}"); do
-	touch "$QEMU_DISKPATH/sys_$i.img"
 	SYSHD_DISKS="${SYSHD_DISKS}--disk $QEMU_DISKPATH/sys_$i.img,size=1.5 "
     done
     QEMU="$QEMU $SYSHD_DISKS"
