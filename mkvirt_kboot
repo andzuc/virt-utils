@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# verifica virtualizzazione
+virsh net-list --all
+
 #     --machine virt,virtualization=true,kernel_irqchip=on,gic-version=3 \#
 #     --qemu-commandline="-d unimp,guest_errors -serial mon:stdio" \
 
@@ -34,7 +37,7 @@ if [ -n "$QEMU_SYSCOUNT" ]; then
 fi
 
 read -r -d '' QEMU <<EOF
-LIBVIRT_DEBUG=1 virt-install \
+virt-install \
     --connect qemu:///system \
     --virt-type qemu \
     -n "$VIRT_NAME" \
