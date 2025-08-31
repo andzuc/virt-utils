@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # verifica virtualizzazione
+echo "virsh net-list --all:"
 virsh net-list --all
 
 #     --machine virt,virtualization=true,kernel_irqchip=on,gic-version=3 \#
