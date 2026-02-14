@@ -1,4 +1,6 @@
 #!/bin/bash
 
 VM_NAME="$(virsh -c qemu:///system list --all --name|grep -i main)"
-virsh -c qemu:///system dumpxml "$VM_NAME"|grep -A5 "<disk"|grep source.file
+# <source file='/var/lib/libvirt/images/debian-stable-i386_main.img'/>
+virsh -c qemu:///system dumpxml "$VM_NAME" \
+    | xmllint --xpath "//disk/source/@file" - 2>/dev/null
