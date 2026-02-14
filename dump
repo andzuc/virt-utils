@@ -1,3 +1,4 @@
 #!/bin/bash
 
-virsh --connect qemu:///system list --all --name
+VM_NAME="$(virsh -c qemu:///system list --all --name|grep -i main)"
+virsh -c qemu:///system dumpxml "$VM_NAME"
