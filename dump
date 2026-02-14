@@ -6,7 +6,7 @@ if ! command -v virsh >/dev/null 2>&1 ; then
     exit 1
 fi
 if ! command -v xmlstarlet >/dev/null 2>&1 ; then
-    echo "$0: missing command xmlstralet"
+    echo "$0: missing command xmlstarlet"
     exit 1
 fi
 
