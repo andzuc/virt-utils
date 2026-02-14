@@ -1,4 +1,4 @@
 #!/bin/bash
 
 VM_NAME="$(virsh -c qemu:///system list --all --name|grep -i main)"
-virsh -c qemu:///system dumpxml "$VM_NAME"
+virsh -c qemu:///system dumpxml "$VM_NAME"|grep -A5 "<disk"|grep source.file
