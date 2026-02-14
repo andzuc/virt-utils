@@ -1,10 +1,20 @@
 #!/bin/bash
+set -euo pipefail
+
+if ! command -v virsh >/dev/null 2>&1 ; then
+    echo "$0: missing command virsh"
+    exit 1
+fi
+if ! command -v xmlstarlet >/dev/null 2>&1 ; then
+    echo "$0: missing command xmlstralet"
+    exit 1
+fi
 
 VM_NAME="$(virsh -c qemu:///system list --all --name|grep -i main)"
-# <source file='/var/lib/libvirt/images/debian-stable-i386_main.img'/>
 VM_DUMPXML="$(virsh -c qemu:///system dumpxml $VM_NAME)"
 echo $VM_NAME: dumpxml:
 echo $VM_DUMPXML
+# <source file='/var/lib/libvirt/images/debian-stable-i386_main.img'/>
 echo $VM_NAME: disk files:
 echo $VM_DUMPXML \
-    |xmllint --xpath "//disk/source/@file" - 2>/dev/null
+    |xmlstarlet sel -t -v "//disk/source/@file"
