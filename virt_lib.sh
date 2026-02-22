@@ -23,6 +23,6 @@ function virget() {
 	echo "$0: missing xpath"
 	exit 1
     fi
-    dumpxml $1 \
+    virdump $1 \
     |xmlstarlet sel -t -v "$2"
 }
