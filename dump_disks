@@ -1,0 +1,7 @@
+#!/bin/bash
+MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$MYDIR"
+export PATH="$PATH:."
+source virt_lib.sh
+
+virget "$1" "//disk/source/@file"
