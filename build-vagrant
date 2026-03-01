@@ -18,6 +18,7 @@ cd "${MYDIR}/vagrant"
 cp -a * "${IMAGE}"
 
 cd "${IMAGE}"
+ls -la
 shopt -s extglob
 METADATA_JSON="$(cat metadata.json|jq '. += {disks: []}')"
 for img in "${BOOTDISK}" !("${BOOTDISK}"|metadata.json|Vagrantfile); do
