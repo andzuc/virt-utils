@@ -5,6 +5,8 @@ set -euo pipefail
 
 BOXNAME="${1}"
 shift
+BOOTDISK="${2}"
+shift
 IMAGE="image-vagrant/${BOXNAME}"
 mkdir -p "${IMAGE}"
 IMAGE="$(readlink -e ${IMAGE})"
@@ -18,7 +20,7 @@ cp -a * "${IMAGE}"
 cd "${IMAGE}"
 shopt -s extglob
 METADATA_JSON="$(cat metadata.json|jq '. += {disks: []}')"
-for img in sys_boot.img !(sys_boot.img|metadata.json|Vagrantfile); do
+for img in "${BOOTDISK}" !("${BOOTDISK}"|metadata.json|Vagrantfile); do
     METADATA_JSON="$(echo $METADATA_JSON|jq '.disks += [$ARGS.named]' --arg path $img)"
 done
 echo "$METADATA_JSON" >metadata.json
