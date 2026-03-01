@@ -1,0 +1,30 @@
+#!/bin/bash
+echo PWD: $PWD
+ORIGDIR="${PWD}"
+BOXNAME="${REPO_NAME}"
+IMAGE="${ORIGDIR}/image-vagrant/${BOXNAME}"
+mkdir -p "${IMAGE}"
+echo cd "${BOOTPATH}"
+cd "${BOOTPATH}"
+for img in *.img; do
+    cp "${img}" "${IMAGE}/${img}"
+done
+cd "${ORIGDIR}/vagrant"
+cp -a * "${IMAGE}"
+cd "${IMAGE}"
+shopt -s extglob
+METADATA_JSON="$(cat metadata.json|jq '. += {disks: []}')"
+for img in sys_boot.img !(sys_boot.img|metadata.json|Vagrantfile); do
+    METADATA_JSON="$(echo $METADATA_JSON|jq '.disks += [$ARGS.named]' --arg path $img)"
+done
+echo "$METADATA_JSON" >metadata.json
+echo cat metadata.json
+cat metadata.json
+echo cat Vagrantfile
+cat Vagrantfile
+pwd
+tar -cvzf "../${BOXNAME}.box" .
+cd ..
+rm -rf "${IMAGE}"
+md5sum * >.MD5SUMS
+mv .MD5SUMS MD5SUMS
