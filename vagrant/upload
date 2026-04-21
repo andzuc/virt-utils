@@ -1,0 +1,82 @@
+#!/bin/bash
+# thanks to: https://iamhow.com/Tools_and_Scripts/Publish_vagrant_box_with_curl_and_rest_APIs.html
+USER="${VAGRANT_USER}"
+BOX="${REPO_NAME}"
+VERSION="$1"
+PROVIDER=libvirt
+ARCHITECTURE="${DEB_ARCH}"
+ORIGDIR="${PWD}"
+BOXPATH="${ORIGDIR}/image-vagrant/${BOX}.box"
+# takes only the first field of SHA512
+CHKSUM="$(sha512sum ${BOXPATH}|sed -E 's|([0-9a-f]+)\s*(.+)|\1|')"
+CHKSUM_TYPE="sha512"
+
+set -e
+
+echo -n "Getting HCP auth token for $HCP_CLIENT_ID..."
+HCP_API_TOKEN=$(curl --location "https://auth.idp.hashicorp.com/oauth2/token" \
+		     --header "Content-Type: application/x-www-form-urlencoded" \
+		     --data-urlencode "client_id=$HCP_CLIENT_ID" \
+		     --data-urlencode "client_secret=$HCP_CLIENT_SECRET" \
+		     --data-urlencode "grant_type=client_credentials" \
+		     --data-urlencode "audience=https://api.hashicorp.cloud" \
+		    | jq -r .access_token)
+if [ -n "$HCP_API_TOKEN" ]; then
+    echo -en "\nGot HCP auth token"
+else
+    echo -en "\nNo HCP auth token"
+fi
+
+ACCESS_TOKEN="${VAGRANT_ACCESS_TOKEN};${HCP_API_TOKEN}"
+
+echo -en "\nCreating the box for $USER/$BOX..."
+curl \
+    --request POST \
+    --header "Content-Type: application/json" \
+    --header "Authorization: Bearer $ACCESS_TOKEN" \
+    https://app.vagrantup.com/api/v2/boxes \
+    --data '{ "box": { "username": "'$USER'", "name": "'$BOX'", "is_private":false } }'
+#{"errors":["Type has already been taken"],"success":false}
+
+echo -en "\nCreate the version $VERSION..."
+curl \
+    --request POST \
+    --header "Content-Type: application/json" \
+    --header "Authorization: Bearer $ACCESS_TOKEN" \
+    https://app.vagrantup.com/api/v2/box/$USER/$BOX/versions \
+    --data '{ "version": { "version": "'$VERSION'" } }'
+#{"errors":["Version has already been taken"],"success":false}
+
+echo -en "\nCreating the virtualbox provider..."
+curl \
+    --request POST \
+    --header "Content-Type: application/json" \
+    --header "Authorization: Bearer $ACCESS_TOKEN" \
+    https://app.vagrantup.com/api/v2/box/$USER/$BOX/version/$VERSION/providers \
+    --data '{ "provider": { "name": "'$PROVIDER'", "checksum":"'"$CHKSUM"'", "checksum_type":"'$CHKSUM_TYPE'", "architecture": "'$ARCHITECTURE'" } }'
+#{"errors":["Metadata provider must be unique for version"],"success":false}
+
+echo -en "\nReceiving the upload url..."
+response=$(curl --verbose \
+		--http1.1 \
+		--request GET \
+		--header "Authorization: Bearer $ACCESS_TOKEN" \
+		https://app.vagrantup.com/api/v2/box/$USER/$BOX/version/$VERSION/provider/$PROVIDER/$ARCHITECTURE/upload)
+
+echo -en "Response: $response"
+upload_path=$(echo "$response" | jq .upload_path | tr -d '"')
+
+echo -en "\nUploading ..."
+curl \
+    --request PUT \
+    "$upload_path" \
+    --progress-bar \
+    --upload-file "${BOXPATH}"
+
+echo -en "\nReleasing..."
+curl \
+    --request PUT \
+    --header "Authorization: Bearer $ACCESS_TOKEN" \
+    https://app.vagrantup.com/api/v2/box/$USER/$BOX/version/$VERSION/release
+
+echo Done
