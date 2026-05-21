@@ -1,0 +1,28 @@
+#!/bin/bash
+# =============================================================================
+# Estrae la versione di un box Vagrant dal log di build
+# Uso: ./get-box-version.sh "nome/del/box" build.log
+# =============================================================================
+
+BOX_NAME="$1"
+LOG_FILE="$2"
+
+if [ -z "$BOX_NAME" ] || [ -z "$LOG_FILE" ]; then
+    echo "Uso: $0 <nome-box> <file-log>" >&2
+    echo "Esempio: $0 'andreazuccherelli/debian-stable' build.log" >&2
+    exit 1
+fi
+
+if [ ! -f "$LOG_FILE" ]; then
+    echo "Errore: File '$LOG_FILE' non trovato" >&2
+    exit 1
+fi
+
+IMAGE_VERSION=$(grep -oP "Adding box '${BOX_NAME}'?\s*\(v\K[\d.]+" "$LOG_FILE" | head -n1)
+
+if [ -n "$IMAGE_VERSION" ]; then
+    echo "$IMAGE_VERSION"
+else
+    echo "ERRORE: Versione non trovata per il box '${BOX_NAME}' nel file ${LOG_FILE}" >&2
+    exit 1
+fi
