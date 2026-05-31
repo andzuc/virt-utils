@@ -22,6 +22,7 @@ ls -la
 shopt -s extglob
 METADATA_JSON="$(cat metadata.json|jq '. += {disks: []}')"
 for img in "${BOOTDISK}" !("${BOOTDISK}"|metadata.json|Vagrantfile); do
+    echo Adding to disks: "path: $img"
     METADATA_JSON="$(echo $METADATA_JSON|jq '.disks += [$ARGS.named]' --arg path $img)"
 done
 echo "$METADATA_JSON" >metadata.json
