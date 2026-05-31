@@ -12,6 +12,7 @@ mkdir -p "${IMAGE}"
 IMAGE="$(readlink -e ${IMAGE})"
 
 for img in "$@"; do
+    echo cp "${img}" "${IMAGE}/$(basename ${img})"
     cp "${img}" "${IMAGE}/$(basename ${img})"
 done
 cd "${MYDIR}/vagrant"
