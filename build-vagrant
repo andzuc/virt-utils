@@ -4,9 +4,12 @@ MYDIR="$(cd "$(dirname "${ME}")" && pwd)"
 set -euo pipefail
 
 BOXNAME="${1}"
+echo "$0: BOXNAME: ${BOXNAME}"
 shift
-BOOTDISK="${2}"
+BOOTDISK="${1}"
+echo "$0: BOOTDISK: ${BOOTDISK}"
 shift
+
 IMAGE="image-vagrant/${BOXNAME}"
 mkdir -p "${IMAGE}"
 IMAGE="$(readlink -e ${IMAGE})"
@@ -22,7 +25,7 @@ cd "${IMAGE}"
 ls -la
 shopt -s extglob
 METADATA_JSON="$(cat metadata.json|jq '. += {disks: []}')"
-for img in "${BOOTDISK}" !("${BOOTDISK}"|metadata.json|Vagrantfile); do
+for img in "${BOOTDISK}" !("${BOOTDISK}"|metadata.json|Vagrantfile|upload); do
     echo Adding to disks: "path: $img"
     METADATA_JSON="$(echo $METADATA_JSON|jq '.disks += [$ARGS.named]' --arg path $img)"
 done
