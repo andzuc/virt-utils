@@ -15,8 +15,8 @@ mkdir -p "${IMAGE}"
 IMAGE="$(readlink -e ${IMAGE})"
 
 for img in "$@"; do
-    echo cp "${img}" "${IMAGE}/$(basename ${img})"
-    cp "${img}" "${IMAGE}/$(basename ${img})"
+    echo qemu-img convert -f qcow2 -O qcow2 -p "${img}" "${IMAGE}/$(basename ${img})"
+    qemu-img convert -f qcow2 -O qcow2 -p "${img}" "${IMAGE}/$(basename ${img})"
 done
 cd "${MYDIR}/vagrant"
 cp -a * "${IMAGE}"
